@@ -25,6 +25,13 @@ public sealed class WorkOrder {
 
     // Waiting: 대기 / InProgress: 진행 중 / Completed: 완료
     public string Status { get; set; } = "Waiting";
+    // 화면 표시용 한글 상태명
+    public string StatusName => Status switch {
+        "Waiting" => "대기",
+        "InProgress" => "진행 중",
+        "Completed" => "완료",
+        _ => Status
+    };
 
     // 시작 전·완료 전에는 값이 없으므로 nullable 사용
     public DateTime? StartedAt { get; set; }

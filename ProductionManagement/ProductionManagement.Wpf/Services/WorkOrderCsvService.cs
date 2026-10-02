@@ -28,12 +28,7 @@ public sealed class WorkOrderCsvService {
             + "목표 수량,양품 합계,불량 합계,달성률(%),단위,상태,비고");
 
         foreach (var workOrder in workOrders) {
-            string statusName = workOrder.Status switch {
-                "Waiting" => "대기",
-                "InProgress" => "진행 중",
-                "Completed" => "완료",
-                _ => workOrder.Status
-            };
+            string statusName = workOrder.StatusName;
 
             string[] values =
             {

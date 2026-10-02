@@ -43,7 +43,7 @@
                                        Margin="0,0,12,0"/>
                             <TextBlock Text="{Binding ProductName}"
                                        Margin="0,0,12,0"/>
-                            <TextBlock Text="{Binding Status}"/>
+                            <TextBlock Text="{Binding StatusName}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
