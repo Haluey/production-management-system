@@ -14,8 +14,13 @@ public sealed class WorkOrderRepository {
             ?? throw new ArgumentNullException(nameof(connectionFactory));
     }
 
-    // 작업지시, 제품 정보, 생산실적 합계와 달성률을 함께 조회
-    public async Task<List<WorkOrder>> GetAllAsync() {
+    // 조건에 맞는 작업지시와 생산실적 합계 조회
+    // 조건을 전달하지 않으면 기존처럼 전체 조회
+    public async Task<List<WorkOrder>> GetAllAsync(
+        DateOnly? startDate = null,
+        DateOnly? endDate = null,
+        string? status = null,
+        string? keyword = null) {
         var workOrders = new List<WorkOrder>();
 
         await using var connection = _connectionFactory.CreateConnection();
@@ -55,8 +60,40 @@ public sealed class WorkOrderRepository {
             GROUP BY WorkOrderId
         ) AS r
             ON r.WorkOrderId = w.WorkOrderId
+        WHERE (@StartDate IS NULL OR w.PlannedDate >= @StartDate)
+          AND (@EndDate IS NULL OR w.PlannedDate <= @EndDate)
+          AND (@Status IS NULL OR w.Status = @Status)
+          AND (
+              @Keyword IS NULL
+              OR CHARINDEX(@Keyword, w.WorkOrderNo) > 0
+              OR CHARINDEX(@Keyword, p.ProductCode) > 0
+              OR CHARINDEX(@Keyword, p.ProductName) > 0
+          )
         ORDER BY w.PlannedDate DESC, w.WorkOrderId DESC;
         """;
+
+        // 날짜 조건이 없으면 SQL의 NULL 전달
+        command.Parameters.Add(
+            "@StartDate", System.Data.SqlDbType.Date)
+            .Value = startDate.HasValue
+                ? (object)startDate.Value.ToDateTime(TimeOnly.MinValue)
+                : DBNull.Value;
+
+        command.Parameters.Add(
+            "@EndDate", System.Data.SqlDbType.Date)
+            .Value = endDate.HasValue
+                ? (object)endDate.Value.ToDateTime(TimeOnly.MinValue)
+                : DBNull.Value;
+
+        // 전체 상태 조회는 NULL로 전달
+        command.Parameters.Add(
+            "@Status", System.Data.SqlDbType.NVarChar, 20)
+            .Value = (object?)status ?? DBNull.Value;
+
+        // 검색어가 없으면 NULL로 전달
+        command.Parameters.Add(
+            "@Keyword", System.Data.SqlDbType.NVarChar, 100)
+            .Value = (object?)keyword ?? DBNull.Value;
 
         await using var reader = await command.ExecuteReaderAsync();
 

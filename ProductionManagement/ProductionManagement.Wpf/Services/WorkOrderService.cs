@@ -16,9 +16,49 @@ public sealed class WorkOrderService {
             ?? throw new ArgumentNullException(nameof(workOrderRepository));
     }
 
-    // 전체 작업지시 목록 조회
-    public Task<List<WorkOrder>> GetAllAsync() {
-        return _workOrderRepository.GetAllAsync();
+    // 조회 조건을 검사한 뒤 작업지시 목록 조회
+    public Task<List<WorkOrder>> GetAllAsync(
+        DateOnly? startDate = null,
+        DateOnly? endDate = null,
+        string? status = null,
+        string? keyword = null) {
+        // 시작일이 종료일보다 늦으면 조회하지 않음
+        if (startDate.HasValue
+            && endDate.HasValue
+            && startDate.Value > endDate.Value) {
+            throw new ArgumentException(
+                "조회 시작일은 종료일보다 늦을 수 없습니다.");
+        }
+
+        // 전체 상태 또는 빈 값이면 상태 제한 없이 조회
+        status = status?.Trim();
+
+        if (string.IsNullOrWhiteSpace(status) || status == "All") {
+            status = null;
+        }
+        else if (status != "Waiting"
+            && status != "InProgress"
+            && status != "Completed") {
+            throw new ArgumentException(
+                "조회할 작업 상태를 확인해 주세요.");
+        }
+
+        // 검색어의 앞뒤 공백 제거
+        keyword = keyword?.Trim();
+
+        if (string.IsNullOrWhiteSpace(keyword)) {
+            keyword = null;
+        }
+        else if (keyword.Length > 100) {
+            throw new ArgumentException(
+                "검색어는 100자 이하로 입력해 주세요.");
+        }
+
+        return _workOrderRepository.GetAllAsync(
+            startDate,
+            endDate,
+            status,
+            keyword);
     }
 
     // 입력값을 검사한 뒤 작업지시 등록

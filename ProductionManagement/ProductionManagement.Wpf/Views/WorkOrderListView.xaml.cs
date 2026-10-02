@@ -34,6 +34,8 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
         WorkOrderGrid.IsEnabled = !isBusy;
         StartButton.IsEnabled = !isBusy;
         CompleteButton.IsEnabled = !isBusy;
+        FilterPanel.IsEnabled = !isBusy;
+        ResetFiltersButton.IsEnabled = !isBusy;
     }
 
     private async void RefreshWorkOrders_Click(
@@ -46,6 +48,13 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
 
         try {
             await _viewModel.LoadAsync();
+        }
+        catch (ArgumentException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "조회 조건 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
         }
         catch (Exception ex) {
             System.Windows.MessageBox.Show(
@@ -295,5 +304,16 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
         finally {
             SetBusy(false);
         }
+    }
+
+    // 조건을 초기화한 뒤 전체 작업지시 조회
+    private void ResetFilters_Click(
+        object sender,
+        RoutedEventArgs e) {
+        if (_isBusy)
+            return;
+
+        _viewModel.ResetFilters();
+        RefreshWorkOrders_Click(sender, e);
     }
 }

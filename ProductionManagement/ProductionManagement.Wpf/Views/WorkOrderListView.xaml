@@ -8,6 +8,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -34,6 +35,14 @@
                  Height="36"
                  Margin="0,0,8,0"
                  Click="CompleteWorkOrder_Click"/>
+
+            <dx:SimpleButton x:Name="ResetFiltersButton"
+                 DockPanel.Dock="Right"
+                 Content="조회 조건 초기화"
+                 Width="130"
+                 Height="36"
+                 Margin="0,0,8,0"
+                 Click="ResetFilters_Click"/>
 
             <TextBlock Text="작업지시 관리"
                        FontSize="24"
@@ -119,9 +128,57 @@
             </Grid>
         </StackPanel>
 
+        <!-- 작업지시 조회 조건 -->
+        <Grid x:Name="FilterPanel"
+              Grid.Row="2"
+              Margin="0,0,0,16">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Margin="0,0,12,0">
+                <TextBlock Text="예정일 시작" Margin="0,0,0,6"/>
+                <DatePicker Height="32"
+                    SelectedDate="{Binding FilterStartDate, Mode=TwoWay}"
+                    SelectedDateFormat="Short"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                <TextBlock Text="예정일 종료" Margin="0,0,0,6"/>
+                <DatePicker Height="32"
+                    SelectedDate="{Binding FilterEndDate, Mode=TwoWay}"
+                    SelectedDateFormat="Short"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                <TextBlock Text="조회 상태" Margin="0,0,0,6"/>
+                <ComboBox Height="32"
+                  SelectedValuePath="Tag"
+                  SelectedValue="{Binding FilterStatus, Mode=TwoWay}">
+                    <ComboBoxItem Content="전체" Tag="All"/>
+                    <ComboBoxItem Content="대기" Tag="Waiting"/>
+                    <ComboBoxItem Content="진행 중" Tag="InProgress"/>
+                    <ComboBoxItem Content="완료" Tag="Completed"/>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Grid.Column="3">
+                <TextBlock Text="검색어 (작업지시 번호·제품 코드·제품명)"
+                   Margin="0,0,0,6"/>
+                <TextBox Height="32"
+                 VerticalContentAlignment="Center"
+                 Text="{Binding SearchKeyword, Mode=TwoWay,
+                                UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+        </Grid>
+
         <!-- 작업지시 목록 -->
         <dxg:GridControl x:Name="WorkOrderGrid"
-                         Grid.Row="2"
+                         Grid.Row="3"
                          ItemsSource="{Binding WorkOrders}"
                          SelectedItem="{Binding SelectedWorkOrder, Mode=TwoWay}"
                          AutoGenerateColumns="None">

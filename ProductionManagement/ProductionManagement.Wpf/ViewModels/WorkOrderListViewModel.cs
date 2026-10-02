@@ -17,6 +17,16 @@ public sealed class WorkOrderListViewModel : ViewModelBase {
     private string _targetQuantityText = string.Empty;
     private string _memo = string.Empty;
 
+    // 조회 조건: 날짜를 선택하지 않으면 해당 범위를 제한하지 않음
+    private DateTime? _filterStartDate;
+    private DateTime? _filterEndDate;
+
+    // All: 전체 / Waiting: 대기 / InProgress: 진행 중 / Completed: 완료
+    private string _filterStatus = "All";
+
+    // 작업지시 번호·제품 코드·제품명 검색
+    private string _searchKeyword = string.Empty;
+
     // 조회한 작업지시 목록
     public ObservableCollection<WorkOrder> WorkOrders { get; } = new();
 
@@ -57,6 +67,30 @@ public sealed class WorkOrderListViewModel : ViewModelBase {
         set => SetProperty(ref _memo, value);
     }
 
+    // 생산 예정일 조회 시작일
+    public DateTime? FilterStartDate {
+        get => _filterStartDate;
+        set => SetProperty(ref _filterStartDate, value);
+    }
+
+    // 생산 예정일 조회 종료일
+    public DateTime? FilterEndDate {
+        get => _filterEndDate;
+        set => SetProperty(ref _filterEndDate, value);
+    }
+
+    // 조회할 작업 상태
+    public string FilterStatus {
+        get => _filterStatus;
+        set => SetProperty(ref _filterStatus, value);
+    }
+
+    // 검색어
+    public string SearchKeyword {
+        get => _searchKeyword;
+        set => SetProperty(ref _searchKeyword, value);
+    }
+
     public WorkOrderListViewModel(
         WorkOrderService workOrderService,
         ProductService productService) {
@@ -70,7 +104,21 @@ public sealed class WorkOrderListViewModel : ViewModelBase {
     // 작업지시와 활성 제품 목록 조회
     public async Task LoadAsync() {
         // 조회가 모두 성공한 뒤 화면 목록을 변경
-        var workOrders = await _workOrderService.GetAllAsync();
+        // 화면에서 선택한 날짜를 날짜 전용 형식으로 변환
+        DateOnly? startDate = FilterStartDate.HasValue
+            ? DateOnly.FromDateTime(FilterStartDate.Value)
+            : null;
+
+        DateOnly? endDate = FilterEndDate.HasValue
+            ? DateOnly.FromDateTime(FilterEndDate.Value)
+            : null;
+
+        // 화면의 조회 조건을 서비스에 전달
+        var workOrders = await _workOrderService.GetAllAsync(
+            startDate,
+            endDate,
+            FilterStatus,
+            SearchKeyword);
         var products = await _productService.GetActiveAsync();
 
         SelectedWorkOrder = null;
@@ -141,5 +189,13 @@ public sealed class WorkOrderListViewModel : ViewModelBase {
                 "완료할 작업지시를 선택해 주세요.");
 
         await _workOrderService.CompleteAsync(workOrder.WorkOrderId);
+    }
+
+    // 조회 조건을 전체 조회 기본값으로 초기화
+    public void ResetFilters() {
+        FilterStartDate = null;
+        FilterEndDate = null;
+        FilterStatus = "All";
+        SearchKeyword = string.Empty;
     }
 }
