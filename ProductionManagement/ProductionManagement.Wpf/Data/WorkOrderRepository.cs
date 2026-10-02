@@ -138,4 +138,28 @@ public sealed class WorkOrderRepository {
             ? null
             : Convert.ToInt32(result);
     }
+
+    // 대기 상태의 작업지시만 시작
+    public async Task<bool> StartAsync(int workOrderId) {
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = """
+        UPDATE dbo.WorkOrders
+        SET Status = N'InProgress',
+            StartedAt = SYSUTCDATETIME()
+        WHERE WorkOrderId = @WorkOrderId
+          AND Status = N'Waiting';
+        """;
+
+        command.Parameters.Add(
+            "@WorkOrderId", System.Data.SqlDbType.Int)
+            .Value = workOrderId;
+
+        int affectedRows = await command.ExecuteNonQueryAsync();
+
+        return affectedRows == 1;
+    }
 }

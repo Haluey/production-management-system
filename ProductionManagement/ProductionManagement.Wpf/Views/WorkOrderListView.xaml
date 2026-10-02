@@ -19,6 +19,14 @@
                              Height="36"
                              Click="RefreshWorkOrders_Click"/>
 
+            <dx:SimpleButton x:Name="StartButton"
+                 DockPanel.Dock="Right"
+                 Content="작업 시작"
+                 Width="100"
+                 Height="36"
+                 Margin="0,0,8,0"
+                 Click="StartWorkOrder_Click"/>
+
             <TextBlock Text="작업지시 관리"
                        FontSize="24"
                        FontWeight="Bold"

@@ -75,4 +75,19 @@ public sealed class WorkOrderService {
                 ex);
         }
     }
+
+    // 대기 중인 작업지시 시작
+    public async Task StartAsync(int workOrderId) {
+        if (workOrderId <= 0)
+            throw new ArgumentException("시작할 작업지시를 선택해 주세요.");
+
+        bool started = await _workOrderRepository.StartAsync(workOrderId);
+
+        // 대상이 없거나 대기 상태가 아니면 시작 불가
+        if (!started) {
+            throw new InvalidOperationException(
+                "대기 상태의 작업지시만 시작할 수 있습니다. "
+                + "작업지시 목록을 다시 조회해 주세요.");
+        }
+    }
 }
