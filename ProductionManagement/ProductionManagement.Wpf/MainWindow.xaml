@@ -10,7 +10,8 @@
         WindowStartupLocation="CenterScreen">
 
     <TabControl>
-        <TabItem Header="제품 관리">
+        <TabItem Header="제품 관리"
+                 Loaded="ProductTab_Loaded">
             <Grid Margin="20">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

@@ -9,6 +9,7 @@ namespace ProductionManagement.Wpf;
 public partial class MainWindow : Window {
     private readonly ProductListViewModel _viewModel;
     private bool _isBusy;
+    private bool _hasLoadedProducts;
 
     public MainWindow() {
         InitializeComponent();
@@ -30,6 +31,16 @@ public partial class MainWindow : Window {
         ProductGrid.IsEnabled = !isBusy;
     }
 
+    // 제품 탭을 처음 열 때 자동 조회
+    private void ProductTab_Loaded(
+        object sender,
+        RoutedEventArgs e) {
+        if (_hasLoadedProducts || _isBusy)
+            return;
+
+        RefreshProducts_Click(sender, e);
+    }
+
     private async void RefreshProducts_Click(
         object sender,
         RoutedEventArgs e) {
@@ -40,6 +51,7 @@ public partial class MainWindow : Window {
 
         try {
             await _viewModel.LoadAsync();
+            _hasLoadedProducts = true;
         }
         catch (Exception ex) {
             System.Windows.MessageBox.Show(

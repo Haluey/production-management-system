@@ -10,6 +10,7 @@ namespace ProductionManagement.Wpf.Views;
 public partial class ProductionResultView : System.Windows.Controls.UserControl {
     private readonly ProductionResultViewModel _viewModel;
     private bool _isBusy;
+    private bool _hasLoaded;
 
     public ProductionResultView() {
         InitializeComponent();
@@ -30,11 +31,15 @@ public partial class ProductionResultView : System.Windows.Controls.UserControl 
     }
 
     private async void LoadWorkOrders_Click(
-        object sender,
-        RoutedEventArgs e) {
-        await ExecuteAsync(
-            () => _viewModel.LoadWorkOrdersAsync(),
-            "작업지시 조회");
+    object sender,
+    RoutedEventArgs e) {
+        await ExecuteAsync(async () =>
+        {
+            await _viewModel.LoadWorkOrdersAsync();
+
+            // 최초 조회 성공 여부 기록
+            _hasLoaded = true;
+        }, "작업지시 조회");
     }
 
     private async void LoadResults_Click(
@@ -114,5 +119,34 @@ public partial class ProductionResultView : System.Windows.Controls.UserControl 
             _isBusy = false;
             ContentGrid.IsEnabled = true;
         }
+    }
+
+    // 탭을 처음 열 때 작업지시 목록 자동 조회
+    private void ProductionResultView_Loaded(
+        object sender,
+        RoutedEventArgs e) {
+        if (_hasLoaded || _isBusy)
+            return;
+
+        LoadWorkOrders_Click(sender, e);
+    }
+
+    // 작업지시를 선택하면 해당 생산실적 자동 조회
+    private async void WorkOrderSelection_Changed(
+        object sender,
+        System.Windows.Controls.SelectionChangedEventArgs e) {
+        if (_isBusy || e.AddedItems.Count == 0)
+            return;
+
+        if (e.AddedItems[0]
+            is not ProductionManagement.Wpf.Models.WorkOrder workOrder)
+            return;
+
+        // 선택 이벤트의 작업지시를 조회 대상으로 확정
+        _viewModel.SelectedWorkOrder = workOrder;
+
+        await ExecuteAsync(
+            () => _viewModel.LoadResultsAsync(),
+            "실적 조회");
     }
 }

@@ -10,6 +10,7 @@ public partial class ProductionDashboardView
     : System.Windows.Controls.UserControl {
     private readonly ProductionDashboardViewModel _viewModel;
     private bool _isBusy;
+    private bool _hasLoaded;
 
     public ProductionDashboardView() {
         InitializeComponent();
@@ -37,6 +38,7 @@ public partial class ProductionDashboardView
 
         try {
             await _viewModel.LoadAsync();
+            _hasLoaded = true;
         }
         catch (Exception ex) {
             System.Windows.MessageBox.Show(
@@ -49,5 +51,15 @@ public partial class ProductionDashboardView
             _isBusy = false;
             RefreshButton.IsEnabled = true;
         }
+    }
+
+    // 생산 현황 탭을 처음 열 때 자동 조회
+    private void ProductionDashboardView_Loaded(
+        object sender,
+        RoutedEventArgs e) {
+        if (_hasLoaded || _isBusy)
+            return;
+
+        RefreshDashboard_Click(sender, e);
     }
 }
