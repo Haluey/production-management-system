@@ -3,165 +3,174 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
         xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+        xmlns:views="clr-namespace:ProductionManagement.Wpf.Views"
         Title="생산 작업지시·실적 관리"
-        Height="650"
-        Width="900"
+        Height="700"
+        Width="1100"
         WindowStartupLocation="CenterScreen">
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <TabControl>
+        <TabItem Header="제품 관리">
+            <Grid Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-        <DockPanel Margin="0,0,0,16">
-            <dx:SimpleButton x:Name="RefreshButton"
-                             DockPanel.Dock="Right"
-                             Content="제품 조회"
-                             Width="100"
-                             Height="36"
-                             Click="RefreshProducts_Click"/>
+                <DockPanel Margin="0,0,0,16">
+                    <dx:SimpleButton x:Name="RefreshButton"
+                                     DockPanel.Dock="Right"
+                                     Content="제품 조회"
+                                     Width="100"
+                                     Height="36"
+                                     Click="RefreshProducts_Click"/>
 
-            <TextBlock Text="제품 관리"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       VerticalAlignment="Center"/>
-        </DockPanel>
+                    <TextBlock Text="제품 관리"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                </DockPanel>
 
-        <!-- 새 제품 등록 -->
-        <Grid x:Name="ProductInputPanel"
-              Grid.Row="1"
-              Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                <!-- 새 제품 등록 -->
+                <Grid x:Name="ProductInputPanel"
+                      Grid.Row="1"
+                      Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <StackPanel Margin="0,0,12,0">
-                <TextBlock Text="제품 코드" Margin="0,0,0,6"/>
-                <TextBox Height="32"
-                         VerticalContentAlignment="Center"
-                         Text="{Binding ProductCode, Mode=TwoWay,
-                                        UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
+                    <StackPanel Margin="0,0,12,0">
+                        <TextBlock Text="제품 코드" Margin="0,0,0,6"/>
+                        <TextBox Height="32"
+                                 VerticalContentAlignment="Center"
+                                 Text="{Binding ProductCode, Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
 
-            <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                <TextBlock Text="제품명" Margin="0,0,0,6"/>
-                <TextBox Height="32"
-                         VerticalContentAlignment="Center"
-                         Text="{Binding ProductName, Mode=TwoWay,
-                                        UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                        <TextBlock Text="제품명" Margin="0,0,0,6"/>
+                        <TextBox Height="32"
+                                 VerticalContentAlignment="Center"
+                                 Text="{Binding ProductName, Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
 
-            <StackPanel Grid.Column="2" Margin="0,0,12,0">
-                <TextBlock Text="단위" Margin="0,0,0,6"/>
-                <TextBox Height="32"
-                         VerticalContentAlignment="Center"
-                         Text="{Binding Unit, Mode=TwoWay,
-                                        UpdateSourceTrigger=PropertyChanged}"/>
-            </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                        <TextBlock Text="단위" Margin="0,0,0,6"/>
+                        <TextBox Height="32"
+                                 VerticalContentAlignment="Center"
+                                 Text="{Binding Unit, Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
 
-            <dx:SimpleButton Grid.Column="3"
-                             Content="제품 등록"
-                             Width="100"
-                             Height="32"
-                             VerticalAlignment="Bottom"
-                             Click="CreateProduct_Click"/>
-        </Grid>
+                    <dx:SimpleButton Grid.Column="3"
+                                     Content="제품 등록"
+                                     Width="100"
+                                     Height="32"
+                                     VerticalAlignment="Bottom"
+                                     Click="CreateProduct_Click"/>
+                </Grid>
 
-        <!-- 제품 목록과 선택한 제품을 ViewModel에 연결 -->
-        <dxg:GridControl x:Name="ProductGrid"
-                         Grid.Row="2"
-                         ItemsSource="{Binding Products}"
-                         SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
-                         AutoGenerateColumns="None">
-            <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="ProductId" Header="ID"/>
-                <dxg:GridColumn FieldName="ProductCode" Header="제품 코드"/>
-                <dxg:GridColumn FieldName="ProductName" Header="제품명"/>
-                <dxg:GridColumn FieldName="Unit" Header="단위"/>
-                <dxg:GridColumn FieldName="IsActive" Header="사용 여부"/>
-            </dxg:GridControl.Columns>
+                <!-- 제품 목록과 선택한 제품을 ViewModel에 연결 -->
+                <dxg:GridControl x:Name="ProductGrid"
+                                 Grid.Row="2"
+                                 ItemsSource="{Binding Products}"
+                                 SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                                 AutoGenerateColumns="None">
+                    <dxg:GridControl.Columns>
+                        <dxg:GridColumn FieldName="ProductId" Header="ID"/>
+                        <dxg:GridColumn FieldName="ProductCode" Header="제품 코드"/>
+                        <dxg:GridColumn FieldName="ProductName" Header="제품명"/>
+                        <dxg:GridColumn FieldName="Unit" Header="단위"/>
+                        <dxg:GridColumn FieldName="IsActive" Header="사용 여부"/>
+                    </dxg:GridControl.Columns>
 
-            <dxg:GridControl.View>
-                <dxg:TableView AutoWidth="True"
-                               AllowEditing="False"
-                               NavigationStyle="Row"
-                               ShowGroupPanel="False"/>
-            </dxg:GridControl.View>
-        </dxg:GridControl>
+                    <dxg:GridControl.View>
+                        <dxg:TableView AutoWidth="True"
+                                       AllowEditing="False"
+                                       NavigationStyle="Row"
+                                       ShowGroupPanel="False"/>
+                    </dxg:GridControl.View>
+                </dxg:GridControl>
 
-        <!-- 선택한 제품 수정 -->
-        <StackPanel x:Name="ProductEditPanel"
-                    Grid.Row="3"
-                    Margin="0,16,0,0">
+                <!-- 선택한 제품 수정 -->
+                <StackPanel x:Name="ProductEditPanel"
+                            Grid.Row="3"
+                            Margin="0,16,0,0">
 
-            <DockPanel Margin="0,0,0,10">
-                <StackPanel DockPanel.Dock="Right"
-                Orientation="Horizontal">
+                    <DockPanel Margin="0,0,0,10">
+                        <StackPanel DockPanel.Dock="Right"
+                        Orientation="Horizontal">
 
-                    <dx:SimpleButton Content="활성화"
-                         Width="90"
-                         Height="32"
-                         Margin="0,0,8,0"
-                         Click="ActivateProduct_Click"/>
-
-                    <dx:SimpleButton Content="비활성화"
-                         Width="90"
-                         Height="32"
-                         Click="DeactivateProduct_Click"/>
-                </StackPanel>
-
-                <TextBlock Text="선택한 제품 수정"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"/>
-            </DockPanel>
-
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="제품 코드" Margin="0,0,0,6"/>
-                    <TextBox Height="32"
-                             IsReadOnly="True"
-                             VerticalContentAlignment="Center"
-                             Text="{Binding SelectedProduct.ProductCode,
-                                            Mode=OneWay}"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                    <TextBlock Text="제품명" Margin="0,0,0,6"/>
-                    <TextBox Height="32"
-                             VerticalContentAlignment="Center"
-                             Text="{Binding EditProductName, Mode=TwoWay,
-                                            UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2" Margin="0,0,12,0">
-                    <TextBlock Text="단위" Margin="0,0,0,6"/>
-                    <TextBox Height="32"
-                             VerticalContentAlignment="Center"
-                             Text="{Binding EditUnit, Mode=TwoWay,
-                                            UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
-
-                <dx:SimpleButton Grid.Column="3"
-                                 Content="제품 수정"
-                                 Width="100"
+                            <dx:SimpleButton Content="활성화"
+                                 Width="90"
                                  Height="32"
-                                 VerticalAlignment="Bottom"
-                                 Click="UpdateProduct_Click"/>
-            </Grid>
-        </StackPanel>
+                                 Margin="0,0,8,0"
+                                 Click="ActivateProduct_Click"/>
+
+                            <dx:SimpleButton Content="비활성화"
+                                 Width="90"
+                                 Height="32"
+                                 Click="DeactivateProduct_Click"/>
+                        </StackPanel>
+
+                        <TextBlock Text="선택한 제품 수정"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                    </DockPanel>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Margin="0,0,12,0">
+                            <TextBlock Text="제품 코드" Margin="0,0,0,6"/>
+                            <TextBox Height="32"
+                                     IsReadOnly="True"
+                                     VerticalContentAlignment="Center"
+                                     Text="{Binding SelectedProduct.ProductCode,
+                                                    Mode=OneWay}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                            <TextBlock Text="제품명" Margin="0,0,0,6"/>
+                            <TextBox Height="32"
+                                     VerticalContentAlignment="Center"
+                                     Text="{Binding EditProductName, Mode=TwoWay,
+                                                    UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                            <TextBlock Text="단위" Margin="0,0,0,6"/>
+                            <TextBox Height="32"
+                                     VerticalContentAlignment="Center"
+                                     Text="{Binding EditUnit, Mode=TwoWay,
+                                                    UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <dx:SimpleButton Grid.Column="3"
+                                         Content="제품 수정"
+                                         Width="100"
+                                         Height="32"
+                                         VerticalAlignment="Bottom"
+                                         Click="UpdateProduct_Click"/>
+                </Grid>
+            </StackPanel>
     </Grid>
+        </TabItem>
+
+        <TabItem Header="작업지시 관리">
+            <views:WorkOrderListView/>
+        </TabItem>
+    </TabControl>
 </Window>
