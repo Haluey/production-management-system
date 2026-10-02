@@ -176,5 +176,9 @@
         <TabItem Header="생산실적 관리">
             <views:ProductionResultView/>
         </TabItem>
+
+        <TabItem Header="생산 현황">
+            <views:ProductionDashboardView/>
+        </TabItem>
     </TabControl>
 </Window>

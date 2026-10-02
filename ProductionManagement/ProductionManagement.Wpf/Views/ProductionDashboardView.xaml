@@ -1,0 +1,144 @@
+﻿<UserControl x:Class="ProductionManagement.Wpf.Views.ProductionDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+             xmlns:dxc="http://schemas.devexpress.com/winfx/2008/xaml/charts">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Margin="0,0,0,16">
+            <dx:SimpleButton x:Name="RefreshButton"
+                             DockPanel.Dock="Right"
+                             Content="현황 조회"
+                             Width="120"
+                             Height="36"
+                             Click="RefreshDashboard_Click"/>
+
+            <TextBlock Text="생산 현황"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"/>
+        </DockPanel>
+
+        <!-- 전체 작업지시 기준 요약 카드 -->
+        <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,16">
+            <UniformGrid.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="#F3F6FA"/>
+                    <Setter Property="CornerRadius" Value="8"/>
+                    <Setter Property="Padding" Value="16"/>
+                    <Setter Property="Margin" Value="0,0,8,0"/>
+                </Style>
+            </UniformGrid.Resources>
+
+            <Border>
+                <StackPanel>
+                    <TextBlock Text="작업지시 건수"/>
+                    <TextBlock Text="{Binding Summary.WorkOrderCount,
+                                              StringFormat={}{0:N0}}"
+                               FontSize="26"
+                               FontWeight="Bold"
+                               Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border>
+                <StackPanel>
+                    <TextBlock Text="목표 수량 합계"/>
+                    <TextBlock Text="{Binding Summary.TotalTargetQuantity,
+                                              StringFormat={}{0:N0}}"
+                               FontSize="26"
+                               FontWeight="Bold"
+                               Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border>
+                <StackPanel>
+                    <TextBlock Text="양품 합계"/>
+                    <TextBlock Text="{Binding Summary.TotalGoodQuantity,
+                                              StringFormat={}{0:N0}}"
+                               FontSize="26"
+                               FontWeight="Bold"
+                               Foreground="#237A45"
+                               Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border>
+                <StackPanel>
+                    <TextBlock Text="불량 합계"/>
+                    <TextBlock Text="{Binding Summary.TotalDefectQuantity,
+                                              StringFormat={}{0:N0}}"
+                               FontSize="26"
+                               FontWeight="Bold"
+                               Foreground="#C0392B"
+                               Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border>
+                <StackPanel>
+                    <TextBlock Text="전체 달성률"/>
+                    <TextBlock Text="{Binding Summary.AchievementRate,
+                                              StringFormat={}{0:N2}%}"
+                               FontSize="26"
+                               FontWeight="Bold"
+                               Foreground="#2457A7"
+                               Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Margin="0,0,0,12">
+                <TextBlock Text="작업지시별 목표·양품 비교"
+                   FontSize="18"
+                   FontWeight="Bold"/>
+
+                <TextBlock Text="전체 작업지시의 누적 실적 기준입니다."
+                   Foreground="Gray"
+                   Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <dxc:ChartControl Grid.Row="1">
+                <dxc:ChartControl.Diagram>
+                    <dxc:XYDiagram2D>
+                        <dxc:XYDiagram2D.Series>
+
+                            <!-- 작업지시별 목표 수량 -->
+                            <dxc:BarSideBySideSeries2D
+                        DisplayName="목표 수량"
+                        DataSource="{Binding WorkOrders}"
+                        ArgumentDataMember="WorkOrderNo"
+                        ValueDataMember="TargetQuantity"/>
+
+                            <!-- 작업지시별 누적 양품 수량 -->
+                            <dxc:BarSideBySideSeries2D
+                        DisplayName="양품 수량"
+                        DataSource="{Binding WorkOrders}"
+                        ArgumentDataMember="WorkOrderNo"
+                        ValueDataMember="TotalGoodQuantity"/>
+
+                        </dxc:XYDiagram2D.Series>
+                    </dxc:XYDiagram2D>
+                </dxc:ChartControl.Diagram>
+
+                <dxc:ChartControl.Legends>
+                    <dxc:Legend/>
+                </dxc:ChartControl.Legends>
+            </dxc:ChartControl>
+        </Grid>
+        
+    </Grid>
+</UserControl>
