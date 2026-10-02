@@ -10,6 +10,8 @@ namespace ProductionManagement.Wpf.Views;
 public partial class WorkOrderListView : System.Windows.Controls.UserControl {
     private readonly WorkOrderListViewModel _viewModel;
     private bool _isBusy;
+    // 최초 조회가 성공했는지 기록
+    private bool _hasLoaded;
     private readonly WorkOrderCsvService _csvService = new();
 
     public WorkOrderListView() {
@@ -41,6 +43,16 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
         ExportCsvButton.IsEnabled = !isBusy;
     }
 
+    // 탭을 처음 열 때 작업지시와 활성 제품 목록 자동 조회
+    private void WorkOrderListView_Loaded(
+        object sender,
+        RoutedEventArgs e) {
+        if (_hasLoaded || _isBusy)
+            return;
+
+        RefreshWorkOrders_Click(sender, e);
+    }
+
     private async void RefreshWorkOrders_Click(
         object sender,
         RoutedEventArgs e) {
@@ -51,6 +63,8 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
 
         try {
             await _viewModel.LoadAsync();
+            // 성공한 경우에만 최초 조회 완료로 기록
+            _hasLoaded = true;
         }
         catch (ArgumentException ex) {
             System.Windows.MessageBox.Show(

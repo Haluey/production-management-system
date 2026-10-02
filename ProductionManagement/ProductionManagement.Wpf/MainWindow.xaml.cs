@@ -27,7 +27,6 @@ public partial class MainWindow : Window {
 
         RefreshButton.IsEnabled = !isBusy;
         ProductInputPanel.IsEnabled = !isBusy;
-        ProductEditPanel.IsEnabled = !isBusy;
         ProductGrid.IsEnabled = !isBusy;
     }
 
@@ -268,5 +267,14 @@ public partial class MainWindow : Window {
         finally {
             SetBusy(false);
         }
+    }
+
+    private void ResetProductInput_Click(
+    object sender,
+    RoutedEventArgs e) {
+        if (_isBusy)
+            return;
+
+        _viewModel.ResetInput();
     }
 }
