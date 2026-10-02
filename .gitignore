@@ -427,3 +427,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# CSV 편집 프로그램의 임시 잠금 파일
+.~lock.*
