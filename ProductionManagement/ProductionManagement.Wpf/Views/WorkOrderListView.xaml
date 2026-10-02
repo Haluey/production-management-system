@@ -124,6 +124,21 @@
                 <dxg:GridColumn FieldName="ProductName" Header="제품명"/>
                 <dxg:GridColumn FieldName="PlannedDate" Header="생산 예정일"/>
                 <dxg:GridColumn FieldName="TargetQuantity" Header="목표 수량"/>
+                <!-- 작업지시별 양품 수량 합계 -->
+                <dxg:GridColumn FieldName="TotalGoodQuantity"
+                Header="양품 합계"
+                ReadOnly="True" />
+
+                <!-- 작업지시별 불량 수량 합계 -->
+                <dxg:GridColumn FieldName="TotalDefectQuantity"
+                Header="불량 합계"
+                ReadOnly="True" />
+
+                <!-- 달성률 값은 이미 백분율로 계산되어 있으므로 숫자로 표시 -->
+                <dxg:GridColumn FieldName="AchievementRate"
+                Header="달성률(%)"
+                ReadOnly="True" />
+                
                 <dxg:GridColumn FieldName="Unit" Header="단위"/>
                 <dxg:GridColumn FieldName="Status" Header="상태"/>
             </dxg:GridControl.Columns>

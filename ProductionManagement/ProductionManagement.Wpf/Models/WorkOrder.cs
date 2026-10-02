@@ -35,4 +35,13 @@ public sealed class WorkOrder {
 
     // 생성·시작·완료 시각은 UTC 기준
     public DateTime CreatedAt { get; set; }
+
+    // 이 작업지시에 등록된 양품 수량의 합계
+    public long TotalGoodQuantity { get; set; }
+
+    // 이 작업지시에 등록된 불량 수량의 합계
+    public long TotalDefectQuantity { get; set; }
+
+    // 목표 수량 대비 양품 생산 달성률(%)
+    public decimal AchievementRate { get; set; }
 }

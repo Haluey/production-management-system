@@ -14,7 +14,7 @@ public sealed class WorkOrderRepository {
             ?? throw new ArgumentNullException(nameof(connectionFactory));
     }
 
-    // 작업지시와 연결된 제품 정보를 함께 조회
+    // 작업지시, 제품 정보, 생산실적 합계와 달성률을 함께 조회
     public async Task<List<WorkOrder>> GetAllAsync() {
         var workOrders = new List<WorkOrder>();
 
@@ -24,24 +24,39 @@ public sealed class WorkOrderRepository {
         await using var command = connection.CreateCommand();
 
         command.CommandText = """
-            SELECT w.WorkOrderId,
-                   w.WorkOrderNo,
-                   w.ProductId,
-                   p.ProductCode,
-                   p.ProductName,
-                   p.Unit,
-                   w.PlannedDate,
-                   w.TargetQuantity,
-                   w.Status,
-                   w.StartedAt,
-                   w.CompletedAt,
-                   w.Memo,
-                   w.CreatedAt
-            FROM dbo.WorkOrders AS w
-            INNER JOIN dbo.Products AS p
-                ON p.ProductId = w.ProductId
-            ORDER BY w.PlannedDate DESC, w.WorkOrderId DESC;
-            """;
+        SELECT w.WorkOrderId,
+               w.WorkOrderNo,
+               w.ProductId,
+               p.ProductCode,
+               p.ProductName,
+               p.Unit,
+               w.PlannedDate,
+               w.TargetQuantity,
+               w.Status,
+               w.StartedAt,
+               w.CompletedAt,
+               w.Memo,
+               w.CreatedAt,
+               COALESCE(r.TotalGoodQuantity, 0) AS TotalGoodQuantity,
+               COALESCE(r.TotalDefectQuantity, 0) AS TotalDefectQuantity,
+               CAST(
+                   COALESCE(r.TotalGoodQuantity, 0) * 100.0
+                   / w.TargetQuantity
+                   AS DECIMAL(10, 2)
+               ) AS AchievementRate
+        FROM dbo.WorkOrders AS w
+        INNER JOIN dbo.Products AS p
+            ON p.ProductId = w.ProductId
+        LEFT JOIN (
+            SELECT WorkOrderId,
+                   SUM(CAST(GoodQuantity AS BIGINT)) AS TotalGoodQuantity,
+                   SUM(CAST(DefectQuantity AS BIGINT)) AS TotalDefectQuantity
+            FROM dbo.ProductionResults
+            GROUP BY WorkOrderId
+        ) AS r
+            ON r.WorkOrderId = w.WorkOrderId
+        ORDER BY w.PlannedDate DESC, w.WorkOrderId DESC;
+        """;
 
         await using var reader = await command.ExecuteReaderAsync();
 
@@ -60,7 +75,7 @@ public sealed class WorkOrderRepository {
                 TargetQuantity = reader.GetInt32(7),
                 Status = reader.GetString(8),
 
-                // NULL일 수 있는 열은 값의 존재 여부부터 확인
+                // 시작·완료 시간은 NULL일 수 있으므로 먼저 확인
                 StartedAt = reader.IsDBNull(9)
                     ? null
                     : DateTime.SpecifyKind(
@@ -76,7 +91,14 @@ public sealed class WorkOrderRepository {
                     : reader.GetString(11),
 
                 CreatedAt = DateTime.SpecifyKind(
-                    reader.GetDateTime(12), DateTimeKind.Utc)
+                    reader.GetDateTime(12), DateTimeKind.Utc),
+
+                // SQL의 BIGINT 합계를 C#의 long으로 읽기
+                TotalGoodQuantity = reader.GetInt64(13),
+                TotalDefectQuantity = reader.GetInt64(14),
+
+                // SQL의 DECIMAL 달성률을 C#의 decimal로 읽기
+                AchievementRate = reader.GetDecimal(15)
             });
         }
 
