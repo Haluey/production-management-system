@@ -172,5 +172,9 @@
         <TabItem Header="작업지시 관리">
             <views:WorkOrderListView/>
         </TabItem>
+
+        <TabItem Header="생산실적 관리">
+            <views:ProductionResultView/>
+        </TabItem>
     </TabControl>
 </Window>
