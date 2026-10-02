@@ -8,26 +8,33 @@ namespace ProductionManagement.Wpf;
 
 public partial class MainWindow : Window {
     private readonly ProductListViewModel _viewModel;
+    private bool _isBusy;
 
     public MainWindow() {
         InitializeComponent();
 
-        // DB 연결 → Repository → Service → ViewModel 구성
         var connectionFactory = new SqlConnectionFactory();
         var productRepository = new ProductRepository(connectionFactory);
         var productService = new ProductService(productRepository);
 
         _viewModel = new ProductListViewModel(productService);
-
-        // XAML의 Binding이 사용할 객체 지정
         DataContext = _viewModel;
+    }
+
+    // 조회·등록 중 중복 실행 방지
+    private void SetBusy(bool isBusy) {
+        _isBusy = isBusy;
+        RefreshButton.IsEnabled = !isBusy;
+        ProductInputPanel.IsEnabled = !isBusy;
     }
 
     private async void RefreshProducts_Click(
         object sender,
         RoutedEventArgs e) {
-        // 조회 중에는 버튼을 비활성화해 중복 클릭 방지
-        RefreshButton.IsEnabled = false;
+        if (_isBusy)
+            return;
+
+        SetBusy(true);
 
         try {
             await _viewModel.LoadAsync();
@@ -40,8 +47,68 @@ public partial class MainWindow : Window {
                 MessageBoxImage.Error);
         }
         finally {
-            // 성공하거나 실패해도 버튼 다시 활성화
-            RefreshButton.IsEnabled = true;
+            SetBusy(false);
+        }
+    }
+
+    private async void CreateProduct_Click(
+        object sender,
+        RoutedEventArgs e) {
+        if (_isBusy)
+            return;
+
+        SetBusy(true);
+
+        try {
+            // 입력 검사 및 DB 저장
+            await _viewModel.CreateAsync();
+
+            // 저장 성공 후 목록 새로고침
+            try {
+                await _viewModel.LoadAsync();
+            }
+            catch (Exception ex) {
+                // 저장은 성공했으므로 다시 등록하지 않도록 안내
+                System.Windows.MessageBox.Show(
+                    $"제품은 등록됐지만 목록 갱신에 실패했습니다.\n"
+                    + $"제품 조회 버튼을 눌러 주세요.\n{ex.Message}",
+                    "목록 갱신 오류",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            System.Windows.MessageBox.Show(
+                "제품이 등록됐습니다.",
+                "등록 완료",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (ArgumentException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "입력 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (InvalidOperationException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "등록 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (Exception ex) {
+            System.Windows.MessageBox.Show(
+                $"등록 처리 중 오류가 발생했습니다.\n"
+                + $"제품 조회로 저장 여부를 확인해 주세요.\n{ex.Message}",
+                "등록 오류",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally {
+            SetBusy(false);
         }
     }
 }

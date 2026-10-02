@@ -52,4 +52,38 @@ public sealed class ProductRepository {
 
         return products;
     }
+
+    // 새 제품을 등록하고 생성된 ProductId 반환
+    public async Task<int> CreateAsync(
+        string productCode,
+        string productName,
+        string unit) {
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = """
+        INSERT INTO dbo.Products (ProductCode, ProductName, Unit)
+        OUTPUT INSERTED.ProductId
+        VALUES (@ProductCode, @ProductName, @Unit);
+        """;
+
+        // 입력값을 SQL 문자열에 붙이지 않고 매개변수로 전달
+        command.Parameters.Add(
+            "@ProductCode", System.Data.SqlDbType.NVarChar, 30)
+            .Value = productCode;
+
+        command.Parameters.Add(
+            "@ProductName", System.Data.SqlDbType.NVarChar, 100)
+            .Value = productName;
+
+        command.Parameters.Add(
+            "@Unit", System.Data.SqlDbType.NVarChar, 20)
+            .Value = unit;
+
+        var result = await command.ExecuteScalarAsync();
+
+        return Convert.ToInt32(result);
+    }
 }

@@ -11,6 +11,7 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -22,14 +23,60 @@
                              Height="36"
                              Click="RefreshProducts_Click"/>
 
-            <TextBlock Text="제품 목록"
+            <TextBlock Text="제품 관리"
                        FontSize="24"
                        FontWeight="Bold"
                        VerticalAlignment="Center"/>
         </DockPanel>
 
-        <!-- ViewModel의 Products 목록을 표에 연결 -->
-        <dxg:GridControl Grid.Row="1"
+        <!-- 제품 등록 입력 영역 -->
+        <Grid x:Name="ProductInputPanel"
+              Grid.Row="1"
+              Margin="0,0,0,16">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Margin="0,0,12,0">
+                <TextBlock Text="제품 코드" Margin="0,0,0,6"/>
+                <TextBox Height="32"
+                         VerticalContentAlignment="Center"
+                         Text="{Binding ProductCode,
+                                        Mode=TwoWay,
+                                        UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                <TextBlock Text="제품명" Margin="0,0,0,6"/>
+                <TextBox Height="32"
+                         VerticalContentAlignment="Center"
+                         Text="{Binding ProductName,
+                                        Mode=TwoWay,
+                                        UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                <TextBlock Text="단위" Margin="0,0,0,6"/>
+                <TextBox Height="32"
+                         VerticalContentAlignment="Center"
+                         Text="{Binding Unit,
+                                        Mode=TwoWay,
+                                        UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+
+            <dx:SimpleButton Grid.Column="3"
+                             Content="제품 등록"
+                             Width="100"
+                             Height="32"
+                             VerticalAlignment="Bottom"
+                             Click="CreateProduct_Click"/>
+        </Grid>
+
+        <dxg:GridControl Grid.Row="2"
                          ItemsSource="{Binding Products}"
                          AutoGenerateColumns="None">
 
