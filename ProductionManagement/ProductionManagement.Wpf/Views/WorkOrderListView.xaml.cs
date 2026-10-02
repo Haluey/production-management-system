@@ -13,13 +13,24 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
     public WorkOrderListView() {
         InitializeComponent();
 
-        // 작업지시 조회에 필요한 객체 구성
         var connectionFactory = new SqlConnectionFactory();
+
         var repository = new WorkOrderRepository(connectionFactory);
         var service = new WorkOrderService(repository);
 
-        _viewModel = new WorkOrderListViewModel(service);
+        var productRepository = new ProductRepository(connectionFactory);
+        var productService = new ProductService(productRepository);
+
+        _viewModel = new WorkOrderListViewModel(service, productService);
         DataContext = _viewModel;
+    }
+
+    // 처리 중 입력·선택·중복 실행 방지
+    private void SetBusy(bool isBusy) {
+        _isBusy = isBusy;
+        RefreshButton.IsEnabled = !isBusy;
+        WorkOrderInputPanel.IsEnabled = !isBusy;
+        WorkOrderGrid.IsEnabled = !isBusy;
     }
 
     private async void RefreshWorkOrders_Click(
@@ -28,9 +39,7 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
         if (_isBusy)
             return;
 
-        _isBusy = true;
-        RefreshButton.IsEnabled = false;
-        WorkOrderGrid.IsEnabled = false;
+        SetBusy(true);
 
         try {
             await _viewModel.LoadAsync();
@@ -43,9 +52,66 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
                 MessageBoxImage.Error);
         }
         finally {
-            _isBusy = false;
-            RefreshButton.IsEnabled = true;
-            WorkOrderGrid.IsEnabled = true;
+            SetBusy(false);
+        }
+    }
+
+    private async void CreateWorkOrder_Click(
+        object sender,
+        RoutedEventArgs e) {
+        if (_isBusy)
+            return;
+
+        SetBusy(true);
+
+        try {
+            await _viewModel.CreateAsync();
+
+            // 저장 성공 후 목록 새로고침
+            try {
+                await _viewModel.LoadAsync();
+            }
+            catch (Exception ex) {
+                System.Windows.MessageBox.Show(
+                    $"작업지시는 등록됐지만 목록 갱신에 실패했습니다.\n"
+                    + $"작업지시 조회 버튼을 눌러 주세요.\n{ex.Message}",
+                    "목록 갱신 오류",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            System.Windows.MessageBox.Show(
+                "작업지시가 등록됐습니다.",
+                "등록 완료",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (ArgumentException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "입력 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (InvalidOperationException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "등록 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (Exception ex) {
+            System.Windows.MessageBox.Show(
+                $"등록 처리 중 오류가 발생했습니다.\n"
+                + $"작업지시 조회로 저장 여부를 확인해 주세요.\n{ex.Message}",
+                "등록 오류",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally {
+            SetBusy(false);
         }
     }
 }

@@ -82,4 +82,60 @@ public sealed class WorkOrderRepository {
 
         return workOrders;
     }
+
+    // 활성 제품에 새 작업지시 등록
+    // 제품이 없거나 비활성이면 null 반환
+    public async Task<int?> CreateAsync(
+        string workOrderNo,
+        int productId,
+        DateOnly plannedDate,
+        int targetQuantity,
+        string? memo) {
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = """
+        INSERT INTO dbo.WorkOrders
+            (WorkOrderNo, ProductId, PlannedDate, TargetQuantity, Memo)
+        OUTPUT INSERTED.WorkOrderId
+        SELECT @WorkOrderNo,
+               p.ProductId,
+               @PlannedDate,
+               @TargetQuantity,
+               @Memo
+        FROM dbo.Products AS p
+        WHERE p.ProductId = @ProductId
+          AND p.IsActive = 1;
+        """;
+
+        command.Parameters.Add(
+            "@WorkOrderNo", System.Data.SqlDbType.NVarChar, 30)
+            .Value = workOrderNo;
+
+        command.Parameters.Add(
+            "@ProductId", System.Data.SqlDbType.Int)
+            .Value = productId;
+
+        // 날짜만 저장하도록 SQL 자료형을 Date로 지정
+        command.Parameters.Add(
+            "@PlannedDate", System.Data.SqlDbType.Date)
+            .Value = plannedDate.ToDateTime(TimeOnly.MinValue);
+
+        command.Parameters.Add(
+            "@TargetQuantity", System.Data.SqlDbType.Int)
+            .Value = targetQuantity;
+
+        // 비고가 없으면 DB의 NULL로 저장
+        command.Parameters.Add(
+            "@Memo", System.Data.SqlDbType.NVarChar, 500)
+            .Value = (object?)memo ?? DBNull.Value;
+
+        var result = await command.ExecuteScalarAsync();
+
+        return result is null || result is DBNull
+            ? null
+            : Convert.ToInt32(result);
+    }
 }

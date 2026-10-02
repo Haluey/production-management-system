@@ -7,6 +7,7 @@
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -24,27 +25,99 @@
                        VerticalAlignment="Center"/>
         </DockPanel>
 
+        <!-- 새 작업지시 등록 -->
+        <StackPanel x:Name="WorkOrderInputPanel"
+                    Grid.Row="1"
+                    Margin="0,0,0,16">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="작업지시 번호" Margin="0,0,0,6"/>
+                    <TextBox Height="32"
+                             VerticalContentAlignment="Center"
+                             Text="{Binding WorkOrderNo, Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                    <TextBlock Text="생산할 제품" Margin="0,0,0,6"/>
+
+                    <ComboBox Height="32"
+                              ItemsSource="{Binding ActiveProducts}"
+                              SelectedItem="{Binding SelectedProduct, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding ProductCode}"
+                                               Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding ProductName}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                    <TextBlock Text="생산 예정일" Margin="0,0,0,6"/>
+                    <DatePicker Height="32"
+                                SelectedDate="{Binding PlannedDate, Mode=TwoWay}"
+                                SelectedDateFormat="Short"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3">
+                    <TextBlock Text="목표 수량" Margin="0,0,0,6"/>
+                    <TextBox Height="32"
+                             VerticalContentAlignment="Center"
+                             Text="{Binding TargetQuantityText, Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="비고 (선택)" Margin="0,0,0,6"/>
+                    <TextBox Height="32"
+                             VerticalContentAlignment="Center"
+                             Text="{Binding Memo, Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <dx:SimpleButton Grid.Column="1"
+                                 Content="작업지시 등록"
+                                 Width="120"
+                                 Height="32"
+                                 VerticalAlignment="Bottom"
+                                 Click="CreateWorkOrder_Click"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- 작업지시 목록 -->
         <dxg:GridControl x:Name="WorkOrderGrid"
-                         Grid.Row="1"
+                         Grid.Row="2"
                          ItemsSource="{Binding WorkOrders}"
                          SelectedItem="{Binding SelectedWorkOrder, Mode=TwoWay}"
                          AutoGenerateColumns="None">
 
             <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="WorkOrderNo"
-                                Header="작업지시 번호"/>
-                <dxg:GridColumn FieldName="ProductCode"
-                                Header="제품 코드"/>
-                <dxg:GridColumn FieldName="ProductName"
-                                Header="제품명"/>
-                <dxg:GridColumn FieldName="PlannedDate"
-                                Header="생산 예정일"/>
-                <dxg:GridColumn FieldName="TargetQuantity"
-                                Header="목표 수량"/>
-                <dxg:GridColumn FieldName="Unit"
-                                Header="단위"/>
-                <dxg:GridColumn FieldName="Status"
-                                Header="상태"/>
+                <dxg:GridColumn FieldName="WorkOrderNo" Header="작업지시 번호"/>
+                <dxg:GridColumn FieldName="ProductCode" Header="제품 코드"/>
+                <dxg:GridColumn FieldName="ProductName" Header="제품명"/>
+                <dxg:GridColumn FieldName="PlannedDate" Header="생산 예정일"/>
+                <dxg:GridColumn FieldName="TargetQuantity" Header="목표 수량"/>
+                <dxg:GridColumn FieldName="Unit" Header="단위"/>
+                <dxg:GridColumn FieldName="Status" Header="상태"/>
             </dxg:GridControl.Columns>
 
             <dxg:GridControl.View>

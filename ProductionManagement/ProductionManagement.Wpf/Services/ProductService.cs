@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using ProductionManagement.Wpf.Data;
 using ProductionManagement.Wpf.Models;
+using System.Linq;
 
 namespace ProductionManagement.Wpf.Services;
 
@@ -115,5 +116,14 @@ public sealed class ProductService {
             throw new InvalidOperationException(
                 "제품을 찾을 수 없습니다. 제품 목록을 다시 조회해 주세요.");
         }
+    }
+
+    // 새 작업지시에 사용할 활성 제품만 조회
+    public async Task<List<Product>> GetActiveAsync() {
+        var products = await _productRepository.GetAllAsync();
+
+        return products
+            .Where(product => product.IsActive)
+            .ToList();
     }
 }
