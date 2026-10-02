@@ -184,4 +184,29 @@ public sealed class WorkOrderRepository {
 
         return affectedRows == 1;
     }
+
+    // 진행 중인 작업지시만 완료 처리
+    public async Task<bool> CompleteAsync(int workOrderId) {
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = """
+        UPDATE dbo.WorkOrders
+        SET Status = N'Completed',
+            CompletedAt = SYSUTCDATETIME()
+        WHERE WorkOrderId = @WorkOrderId
+          AND Status = N'InProgress';
+        """;
+
+        command.Parameters.Add(
+            "@WorkOrderId", System.Data.SqlDbType.Int)
+            .Value = workOrderId;
+
+        int affectedRows = await command.ExecuteNonQueryAsync();
+
+        // 실제로 한 건이 완료 처리되었는지 확인
+        return affectedRows == 1;
+    }
 }

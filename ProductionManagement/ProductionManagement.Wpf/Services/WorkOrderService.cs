@@ -90,4 +90,21 @@ public sealed class WorkOrderService {
                 + "작업지시 목록을 다시 조회해 주세요.");
         }
     }
+
+    // 진행 중인 작업지시 완료
+    public async Task CompleteAsync(int workOrderId) {
+        if (workOrderId <= 0)
+            throw new ArgumentException(
+                "완료할 작업지시를 선택해 주세요.");
+
+        bool completed =
+            await _workOrderRepository.CompleteAsync(workOrderId);
+
+        // 대상이 없거나 진행 중 상태가 아니면 완료 불가
+        if (!completed) {
+            throw new InvalidOperationException(
+                "진행 중인 작업지시만 완료할 수 있습니다. "
+                + "작업지시 목록을 다시 조회해 주세요.");
+        }
+    }
 }

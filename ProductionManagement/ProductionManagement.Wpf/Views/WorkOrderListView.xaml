@@ -27,6 +27,14 @@
                  Margin="0,0,8,0"
                  Click="StartWorkOrder_Click"/>
 
+            <dx:SimpleButton x:Name="CompleteButton"
+                 DockPanel.Dock="Right"
+                 Content="작업 완료"
+                 Width="100"
+                 Height="36"
+                 Margin="0,0,8,0"
+                 Click="CompleteWorkOrder_Click"/>
+
             <TextBlock Text="작업지시 관리"
                        FontSize="24"
                        FontWeight="Bold"

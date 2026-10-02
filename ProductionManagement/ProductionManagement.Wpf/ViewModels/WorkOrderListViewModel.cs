@@ -131,4 +131,15 @@ public sealed class WorkOrderListViewModel : ViewModelBase {
 
         await _workOrderService.StartAsync(workOrder.WorkOrderId);
     }
+
+    // 표에서 선택한 작업지시 완료
+    public async Task CompleteAsync() {
+        var workOrder = SelectedWorkOrder;
+
+        if (workOrder is null)
+            throw new ArgumentException(
+                "완료할 작업지시를 선택해 주세요.");
+
+        await _workOrderService.CompleteAsync(workOrder.WorkOrderId);
+    }
 }

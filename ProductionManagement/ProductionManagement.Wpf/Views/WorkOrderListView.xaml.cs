@@ -33,6 +33,7 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
         WorkOrderInputPanel.IsEnabled = !isBusy;
         WorkOrderGrid.IsEnabled = !isBusy;
         StartButton.IsEnabled = !isBusy;
+        CompleteButton.IsEnabled = !isBusy;
     }
 
     private async void RefreshWorkOrders_Click(
@@ -118,8 +119,8 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
     }
 
     private async void StartWorkOrder_Click(
-    object sender,
-    RoutedEventArgs e) {
+        object sender,
+        RoutedEventArgs e) {
         if (_isBusy)
             return;
 
@@ -191,6 +192,103 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
                 $"작업 시작 중 오류가 발생했습니다.\n"
                 + $"작업지시 조회로 상태를 확인해 주세요.\n{ex.Message}",
                 "시작 오류",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally {
+            SetBusy(false);
+        }
+    }
+
+    private async void CompleteWorkOrder_Click(
+        object sender,
+        RoutedEventArgs e) {
+        if (_isBusy)
+            return;
+
+        var workOrder = _viewModel.SelectedWorkOrder;
+
+        if (workOrder is null) {
+            System.Windows.MessageBox.Show(
+                "완료할 작업지시를 선택해 주세요.",
+                "선택 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
+
+        // 화면에 표시된 상태를 먼저 확인
+        // 실제 저장 시점의 상태는 DB에서도 다시 검사
+        if (workOrder.Status != "InProgress") {
+            System.Windows.MessageBox.Show(
+                "진행 중인 작업지시만 완료할 수 있습니다.",
+                "상태 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
+
+        var answer = System.Windows.MessageBox.Show(
+            $"{workOrder.WorkOrderNo}\n"
+            + $"{workOrder.ProductName}\n\n"
+            + "이 작업을 완료하시겠습니까?\n"
+            + "목표 달성률과 관계없이 완료 처리되며, "
+            + "완료 후에는 생산실적을 추가할 수 없습니다.",
+            "작업 완료 확인",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question,
+            MessageBoxResult.No);
+
+        if (answer != MessageBoxResult.Yes)
+            return;
+
+        SetBusy(true);
+
+        try {
+            await _viewModel.CompleteAsync();
+
+            // 완료 성공 후 최신 상태 조회
+            try {
+                await _viewModel.LoadAsync();
+            }
+            catch (Exception ex) {
+                System.Windows.MessageBox.Show(
+                    "작업은 완료됐지만 목록 갱신에 실패했습니다.\n"
+                    + $"작업지시 조회 버튼을 눌러 주세요.\n{ex.Message}",
+                    "목록 갱신 오류",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            System.Windows.MessageBox.Show(
+                "작업이 완료됐습니다.",
+                "완료 처리",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (ArgumentException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "입력 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (InvalidOperationException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "완료 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (Exception ex) {
+            System.Windows.MessageBox.Show(
+                "작업 완료 중 오류가 발생했습니다.\n"
+                + $"작업지시 조회로 상태를 확인해 주세요.\n{ex.Message}",
+                "완료 오류",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
