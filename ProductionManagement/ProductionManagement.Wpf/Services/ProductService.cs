@@ -62,4 +62,40 @@ public sealed class ProductService {
                 ex);
         }
     }
+
+    // 제품명과 단위를 검사한 뒤 수정
+    public async Task UpdateAsync(
+        int productId,
+        string productName,
+        string unit) {
+        if (productId <= 0)
+            throw new ArgumentException("수정할 제품을 선택해 주세요.");
+
+        // 앞뒤 공백 제거
+        productName = (productName ?? string.Empty).Trim();
+        unit = (unit ?? string.Empty).Trim();
+
+        if (string.IsNullOrWhiteSpace(productName))
+            throw new ArgumentException("제품명을 입력해 주세요.");
+
+        if (productName.Length > 100)
+            throw new ArgumentException("제품명은 100자 이하로 입력해 주세요.");
+
+        if (string.IsNullOrWhiteSpace(unit))
+            throw new ArgumentException("단위를 입력해 주세요.");
+
+        if (unit.Length > 20)
+            throw new ArgumentException("단위는 20자 이하로 입력해 주세요.");
+
+        bool updated = await _productRepository.UpdateAsync(
+            productId,
+            productName,
+            unit);
+
+        // 해당 ID의 제품이 없어 수정되지 않은 경우
+        if (!updated) {
+            throw new InvalidOperationException(
+                "수정할 제품을 찾을 수 없습니다. 제품 목록을 다시 조회해 주세요.");
+        }
+    }
 }

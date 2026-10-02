@@ -12,6 +12,9 @@ public sealed class ProductListViewModel : ViewModelBase {
     private string _productCode = string.Empty;
     private string _productName = string.Empty;
     private string _unit = "EA";
+    private Product? _selectedProduct;
+    private string _editProductName = string.Empty;
+    private string _editUnit = string.Empty;
 
     // 화면에 표시할 제품 목록
     public ObservableCollection<Product> Products { get; } = new();
@@ -32,6 +35,30 @@ public sealed class ProductListViewModel : ViewModelBase {
     public string Unit {
         get => _unit;
         set => SetProperty(ref _unit, value);
+    }
+
+    // 표에서 선택한 제품
+    public Product? SelectedProduct {
+        get => _selectedProduct;
+        set {
+            if (SetProperty(ref _selectedProduct, value)) {
+                // 선택한 제품의 정보를 수정 입력칸에 표시
+                EditProductName = value?.ProductName ?? string.Empty;
+                EditUnit = value?.Unit ?? string.Empty;
+            }
+        }
+    }
+
+    // 수정할 제품명
+    public string EditProductName {
+        get => _editProductName;
+        set => SetProperty(ref _editProductName, value);
+    }
+
+    // 수정할 단위
+    public string EditUnit {
+        get => _editUnit;
+        set => SetProperty(ref _editUnit, value);
     }
 
     public ProductListViewModel(ProductService productService) {
@@ -63,5 +90,18 @@ public sealed class ProductListViewModel : ViewModelBase {
         Unit = "EA";
 
         return productId;
+    }
+
+    // 선택한 제품의 제품명과 단위 수정
+    public async Task UpdateAsync() {
+        var selectedProduct = SelectedProduct;
+
+        if (selectedProduct is null)
+            throw new ArgumentException("수정할 제품을 선택해 주세요.");
+
+        await _productService.UpdateAsync(
+            selectedProduct.ProductId,
+            EditProductName,
+            EditUnit);
     }
 }
