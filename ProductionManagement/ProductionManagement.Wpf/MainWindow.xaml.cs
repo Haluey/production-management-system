@@ -173,4 +173,100 @@ public partial class MainWindow : Window {
             SetBusy(false);
         }
     }
+
+    private async void ActivateProduct_Click(
+    object sender,
+    RoutedEventArgs e) {
+        await ChangeProductActiveAsync(true);
+    }
+
+    private async void DeactivateProduct_Click(
+        object sender,
+        RoutedEventArgs e) {
+        await ChangeProductActiveAsync(false);
+    }
+
+    // 활성화·비활성화 버튼에서 공통으로 호출
+    private async System.Threading.Tasks.Task ChangeProductActiveAsync(
+        bool isActive) {
+        if (_isBusy)
+            return;
+
+        var selectedProduct = _viewModel.SelectedProduct;
+
+        if (selectedProduct is null) {
+            System.Windows.MessageBox.Show(
+                "제품을 선택해 주세요.",
+                "선택 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
+
+        string actionName = isActive ? "활성화" : "비활성화";
+
+        // 변경 전 사용자 확인
+        var answer = System.Windows.MessageBox.Show(
+            $"{selectedProduct.ProductCode} · "
+            + $"{selectedProduct.ProductName}\n"
+            + $"이 제품을 {actionName}하시겠습니까?",
+            "사용 여부 변경",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (answer != MessageBoxResult.Yes)
+            return;
+
+        SetBusy(true);
+
+        try {
+            await _viewModel.SetActiveAsync(isActive);
+
+            try {
+                await _viewModel.LoadAsync();
+            }
+            catch (Exception ex) {
+                System.Windows.MessageBox.Show(
+                    $"사용 여부는 변경됐지만 목록 갱신에 실패했습니다.\n"
+                    + $"제품 조회 버튼을 눌러 주세요.\n{ex.Message}",
+                    "목록 갱신 오류",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            System.Windows.MessageBox.Show(
+                $"제품이 {actionName}됐습니다.",
+                "변경 완료",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (ArgumentException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "입력 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (InvalidOperationException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "변경 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (Exception ex) {
+            System.Windows.MessageBox.Show(
+                $"사용 여부 변경 중 오류가 발생했습니다.\n"
+                + $"제품 조회로 저장 여부를 확인해 주세요.\n{ex.Message}",
+                "변경 오류",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally {
+            SetBusy(false);
+        }
+    }
 }

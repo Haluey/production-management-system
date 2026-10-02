@@ -98,4 +98,22 @@ public sealed class ProductService {
                 "수정할 제품을 찾을 수 없습니다. 제품 목록을 다시 조회해 주세요.");
         }
     }
+
+    // 제품 사용 여부 변경
+    public async Task SetActiveAsync(
+        int productId,
+        bool isActive) {
+        if (productId <= 0)
+            throw new ArgumentException("제품을 선택해 주세요.");
+
+        bool updated = await _productRepository.SetActiveAsync(
+            productId,
+            isActive);
+
+        // 대상 제품이 없어 변경되지 않은 경우
+        if (!updated) {
+            throw new InvalidOperationException(
+                "제품을 찾을 수 없습니다. 제품 목록을 다시 조회해 주세요.");
+        }
+    }
 }

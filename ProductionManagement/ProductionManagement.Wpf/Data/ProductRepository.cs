@@ -121,4 +121,32 @@ public sealed class ProductRepository {
 
         return affectedRows == 1;
     }
+
+    // 제품 활성화·비활성화
+    public async Task<bool> SetActiveAsync(
+        int productId,
+        bool isActive) {
+        await using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = """
+        UPDATE dbo.Products
+        SET IsActive = @IsActive
+        WHERE ProductId = @ProductId;
+        """;
+
+        command.Parameters.Add(
+            "@ProductId", System.Data.SqlDbType.Int)
+            .Value = productId;
+
+        command.Parameters.Add(
+            "@IsActive", System.Data.SqlDbType.Bit)
+            .Value = isActive;
+
+        int affectedRows = await command.ExecuteNonQueryAsync();
+
+        return affectedRows == 1;
+    }
 }

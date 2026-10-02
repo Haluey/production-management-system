@@ -104,4 +104,16 @@ public sealed class ProductListViewModel : ViewModelBase {
             EditProductName,
             EditUnit);
     }
+
+    // 선택한 제품의 활성화·비활성화
+    public async Task SetActiveAsync(bool isActive) {
+        var selectedProduct = SelectedProduct;
+
+        if (selectedProduct is null)
+            throw new ArgumentException("제품을 선택해 주세요.");
+
+        await _productService.SetActiveAsync(
+            selectedProduct.ProductId,
+            isActive);
+    }
 }
