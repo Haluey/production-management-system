@@ -44,6 +44,14 @@
                  Margin="0,0,8,0"
                  Click="ResetFilters_Click"/>
 
+            <dx:SimpleButton x:Name="ExportCsvButton"
+                 DockPanel.Dock="Right"
+                 Content="CSV 저장"
+                 Width="100"
+                 Height="36"
+                 Margin="0,0,8,0"
+                 Click="ExportCsv_Click"/>
+
             <TextBlock Text="작업지시 관리"
                        FontSize="24"
                        FontWeight="Bold"

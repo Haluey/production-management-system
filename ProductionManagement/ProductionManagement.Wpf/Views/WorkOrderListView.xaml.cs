@@ -3,12 +3,14 @@ using System.Windows;
 using ProductionManagement.Wpf.Data;
 using ProductionManagement.Wpf.Services;
 using ProductionManagement.Wpf.ViewModels;
+using System.Linq;
 
 namespace ProductionManagement.Wpf.Views;
 
 public partial class WorkOrderListView : System.Windows.Controls.UserControl {
     private readonly WorkOrderListViewModel _viewModel;
     private bool _isBusy;
+    private readonly WorkOrderCsvService _csvService = new();
 
     public WorkOrderListView() {
         InitializeComponent();
@@ -36,6 +38,7 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
         CompleteButton.IsEnabled = !isBusy;
         FilterPanel.IsEnabled = !isBusy;
         ResetFiltersButton.IsEnabled = !isBusy;
+        ExportCsvButton.IsEnabled = !isBusy;
     }
 
     private async void RefreshWorkOrders_Click(
@@ -315,5 +318,68 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
 
         _viewModel.ResetFilters();
         RefreshWorkOrders_Click(sender, e);
+    }
+
+    // 현재 조회된 작업지시 목록을 CSV로 저장
+    private async void ExportCsv_Click(
+        object sender,
+        RoutedEventArgs e) {
+        if (_isBusy)
+            return;
+
+        // 화면에 조회된 목록을 복사해서 저장 대상으로 확정
+        var workOrders = _viewModel.WorkOrders.ToList();
+
+        if (workOrders.Count == 0) {
+            System.Windows.MessageBox.Show(
+                "저장할 작업지시가 없습니다. 먼저 작업지시를 조회해 주세요.",
+                "저장 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
+
+        var dialog = new Microsoft.Win32.SaveFileDialog {
+            Title = "작업지시 CSV 저장",
+            Filter = "CSV 파일 (*.csv)|*.csv",
+            DefaultExt = ".csv",
+            AddExtension = true,
+            OverwritePrompt = true,
+            FileName = $"작업지시_{DateTime.Now:yyyyMMdd_HHmmss}.csv"
+        };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        SetBusy(true);
+
+        try {
+            await _csvService.ExportAsync(dialog.FileName, workOrders);
+
+            System.Windows.MessageBox.Show(
+                $"작업지시 {workOrders.Count}건을 저장했습니다.\n"
+                + dialog.FileName,
+                "CSV 저장 완료",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (ArgumentException ex) {
+            System.Windows.MessageBox.Show(
+                ex.Message,
+                "저장 확인",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (Exception ex) {
+            System.Windows.MessageBox.Show(
+                $"CSV 저장에 실패했습니다.\n{ex.Message}",
+                "저장 오류",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally {
+            SetBusy(false);
+        }
     }
 }
