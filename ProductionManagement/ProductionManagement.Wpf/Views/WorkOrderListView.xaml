@@ -20,7 +20,8 @@
            Margin="0,0,0,16"/>
 
         <Border Grid.Row="1"
-                Background="#F3F6FA"
+                BorderBrush="#DCE2EA"
+                BorderThickness="1"
                 CornerRadius="8"
                 Padding="16"
                 Margin="0,0,0,16">
