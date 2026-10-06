@@ -102,9 +102,8 @@ public sealed class WorkOrderListViewModel : ViewModelBase {
     }
 
     // 작업지시와 활성 제품 목록 조회
+    // 조회 조건에 맞는 작업지시 목록만 갱신
     public async Task LoadAsync() {
-        // 조회가 모두 성공한 뒤 화면 목록을 변경
-        // 화면에서 선택한 날짜를 날짜 전용 형식으로 변환
         DateOnly? startDate = FilterStartDate.HasValue
             ? DateOnly.FromDateTime(FilterStartDate.Value)
             : null;
@@ -113,13 +112,11 @@ public sealed class WorkOrderListViewModel : ViewModelBase {
             ? DateOnly.FromDateTime(FilterEndDate.Value)
             : null;
 
-        // 화면의 조회 조건을 서비스에 전달
         var workOrders = await _workOrderService.GetAllAsync(
             startDate,
             endDate,
             FilterStatus,
             SearchKeyword);
-        var products = await _productService.GetActiveAsync();
 
         SelectedWorkOrder = null;
         WorkOrders.Clear();
@@ -127,13 +124,30 @@ public sealed class WorkOrderListViewModel : ViewModelBase {
         foreach (var workOrder in workOrders) {
             WorkOrders.Add(workOrder);
         }
+    }
+
+    // 등록용 제품 목록 갱신
+    public async Task LoadActiveProductsAsync() {
+        // 현재 선택한 제품의 ID를 기억
+        int? selectedProductId = SelectedProduct?.ProductId;
+
+        // 조회에 성공한 뒤 화면 목록을 변경
+        var products = await _productService.GetActiveAsync();
 
         SelectedProduct = null;
         ActiveProducts.Clear();
 
         foreach (var product in products) {
             ActiveProducts.Add(product);
+
+            // 같은 제품이 여전히 활성 상태라면 선택 유지
+            // 제품명 등이 변경됐으면 새 정보로 반영
+            if (product.ProductId == selectedProductId) {
+                SelectedProduct = product;
+            }
         }
+
+        // 선택했던 제품이 비활성화됐다면 선택은 해제됨
     }
 
     // 새 작업지시 등록

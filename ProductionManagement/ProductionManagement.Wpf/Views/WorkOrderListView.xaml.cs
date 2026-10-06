@@ -44,13 +44,33 @@ public partial class WorkOrderListView : System.Windows.Controls.UserControl {
     }
 
     // 탭을 처음 열 때 작업지시와 활성 제품 목록 자동 조회
-    private void WorkOrderListView_Loaded(
-        object sender,
-        RoutedEventArgs e) {
-        if (_hasLoaded || _isBusy)
+    private async void WorkOrderListView_Loaded(
+        object sender, RoutedEventArgs e) {
+        if (_isBusy)
             return;
 
-        RefreshWorkOrders_Click(sender, e);
+        SetBusy(true);
+
+        try {
+            // 탭에 들어올 때마다 최신 활성 제품 목록 반영
+            await _viewModel.LoadActiveProductsAsync();
+
+            // 작업지시 목록은 처음 들어올 때만 자동 조회
+            if (!_hasLoaded) {
+                await _viewModel.LoadAsync();
+                _hasLoaded = true;
+            }
+        }
+        catch (Exception ex) {
+            System.Windows.MessageBox.Show(
+                $"작업지시 화면을 불러오지 못했습니다.\n{ex.Message}",
+                "조회 오류",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally {
+            SetBusy(false);
+        }
     }
 
     private async void RefreshWorkOrders_Click(
